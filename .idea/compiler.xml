@@ -7,13 +7,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="kafkaConsumer" />
-        <module name="kafkaProducer" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="kafkaConsumer" target="11" />
-      <module name="kafkaConsumer (1)" target="11" />
-      <module name="kafkaConsumer (2)" target="11" />
       <module name="kafkaProducer" target="11" />
     </bytecodeTargetLevel>
   </component>
