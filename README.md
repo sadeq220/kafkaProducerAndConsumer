@@ -25,5 +25,4 @@ MetadataCache that includes a map of all brokers and all replicas in the cluster
 request type called a metadata request, which includes a list of topics the client is
 interested in. The server response specifies which partitions exist in the topics, the
 replicas for each partition, and which replica is the leader. Metadata requests can be
-sent to any broker because all brokers have a metadata cache that contains this infor‐
-mation.
+sent to any broker because all brokers have a metadata cache that contains this information.
