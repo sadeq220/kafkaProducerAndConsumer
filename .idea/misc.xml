@@ -4,7 +4,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/kafkaConsumer/pom.xml" />
-        <option value="$PROJECT_DIR$/kafka/pom.xml" />
+        <option value="$PROJECT_DIR$/kafkaProducer/pom.xml" />
       </list>
     </option>
   </component>
