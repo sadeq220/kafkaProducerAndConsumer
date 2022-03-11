@@ -1,0 +1,33 @@
+1)cluster membership:
+Kafka uses Apache Zookeeper to maintain the list of brokers that are currently mem‐
+bers of a cluster. Every broker has a unique identifier that is either set in the broker
+configuration file or automatically generated. Every time a broker process starts, it
+registers itself with its ID in Zookeeper by creating an ephemeral node. Different
+Kafka components subscribe to the /brokers/ids path in Zookeeper where brokers
+are registered so that they get notified when brokers are added or removed.
+
+2)elect controller:
+Kafka uses Zookeeper’s ephemeral node feature to elect a controller
+and to notify the controller when nodes join and leave the cluster. The controller is
+responsible for electing leaders among the partitions and replicas whenever it notices
+nodes join and leave the cluster. The controller uses the epoch number to prevent a
+“split brain” scenario where two nodes believe each is the current controller.
+The controller is one of the Kafka brokers that, in addition to the usual broker func‐
+tionality, is responsible for electing partition leaders. The first broker that starts in the
+cluster becomes the controller by creating an ephemeral node in ZooKeeper called /
+controller . When other brokers start, they also try to create this node, but receive a
+“node already exists” exception, which causes them to “realize” that the controller
+node already exists and that the cluster already has a controller. The brokers create a
+Zookeeper watch on the controller node so they get notified of changes to this node.
+This way, we guarantee that the cluster will only have one controller at a time.
+
+3)topic configuration
+in the past, Kafka Consumers used Apache Zoo‐
+keeper to keep track of the offsets they receive from Kafka. So when a consumer is
+started, it can check Zookeeper for the last offset that was read from its partitions and
+know where to start processing. For various reasons, we decided to stop using Zoo‐
+keeper for this, and instead store those offsets in a special Kafka topic. In order to do
+this, we had to add several requests to the protocol: OffsetCommitRequest , Offset
+FetchRequest , and ListOffsetsRequest . Now when an application calls the client
+API to commit consumer offsets, the client no longer writes to Zookeeper; instead, it
+sends OffsetCommitRequest to Kafka.
