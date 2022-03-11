@@ -1,17 +1,17 @@
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MyKafkaConsumer {
     private static final KafkaConsumer<String,String> kafkaConsumer;
     private static Thread mainThread;
+    public static final ConcurrentHashMap<TopicPartition, OffsetAndMetadata> CONCURRENT_HASH_MAP=new ConcurrentHashMap<>();
     static {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
@@ -35,13 +35,14 @@ public class MyKafkaConsumer {
             }
 
         }));
-            kafkaConsumer.subscribe(List.of("test"));
+            kafkaConsumer.subscribe(List.of("test"),new HandleBalancing(kafkaConsumer));
 
         Duration duration = Duration.ofSeconds(1l);
         while(true){
             try {
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(duration);
                 for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
+                    //atomic method to employ Exactly once policy
                     doWhitConsumerRecord(consumerRecord, String.class);
                 }
                 // commit the latest offset returned by poll(duration)
@@ -53,7 +54,10 @@ public class MyKafkaConsumer {
             }
         }
     }
-    private static <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
+    //TODO write lock-free atomic method
+    private static synchronized <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
         System.out.println(consumerRecord.value());
+        MyKafkaConsumer.CONCURRENT_HASH_MAP.put(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),
+                new OffsetAndMetadata(consumerRecord.offset()+1,null));
     }
 }
