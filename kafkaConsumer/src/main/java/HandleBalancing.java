@@ -14,6 +14,7 @@ public class HandleBalancing implements ConsumerRebalanceListener {
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
     kafkaConsumer.commitSync(MyKafkaConsumer.CONCURRENT_HASH_MAP);
+        System.out.println("commit latest offset done");
     }
 
     @Override

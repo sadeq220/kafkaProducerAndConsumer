@@ -21,6 +21,7 @@ public class MyKafkaConsumer {
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");// read AUTO_OFFSET_RESET_DOC
         properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,3);// to make sure we don't ran out of memory
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false);
+        properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,"org.apache.kafka.clients.consumer.CooperativeStickyAssignor");//Avoid “stop-the-world” consumer group rebalances by using cooperative rebalancing
 
         kafkaConsumer=new KafkaConsumer<>(properties);
     }
@@ -39,8 +40,9 @@ public class MyKafkaConsumer {
             kafkaConsumer.subscribe(List.of("test"),new HandleBalancing(kafkaConsumer));
 
         Duration duration = Duration.ofSeconds(1l);
+        try {
         while(true){
-            try {
+
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(duration);
                 for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
                     //atomic method to employ Exactly once policy
@@ -48,11 +50,10 @@ public class MyKafkaConsumer {
                 }
                 // commit the latest offset returned by poll(duration)
                 kafkaConsumer.commitSync();
-            }catch (WakeupException e){
-                // just for exit code 0
-            }finally {
-                kafkaConsumer.close();
-            }
+        }}catch (WakeupException e){
+            // just for exit code 0
+        }finally {
+            kafkaConsumer.close();
         }
     }
     //TODO write lock-free atomic method
