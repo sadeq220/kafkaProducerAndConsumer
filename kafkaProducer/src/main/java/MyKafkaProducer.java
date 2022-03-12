@@ -1,6 +1,7 @@
 import kafka.tools.ConsoleProducer;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.Cluster;
+import org.apache.kafka.common.errors.LeaderNotAvailableException;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -49,6 +50,14 @@ public class MyKafkaProducer {
      */
     public static RecordMetadata synchronousSendToKafka(KafkaProducer kafkaProducer,ProducerRecord producerRecord) throws ExecutionException, InterruptedException {
         Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
+        /**
+         * resend on retryable errors
+         */
+        try{
+            future.get();
+        }catch (LeaderNotAvailableException e){
+            synchronousSendToKafka(kafkaProducer,producerRecord);
+        }
         return future.get();
     }
 
@@ -63,7 +72,11 @@ public class MyKafkaProducer {
         }
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-            if(e!=null) {
+            /**
+             * to guarantee reliability
+             * resend on retryable errors
+            */
+            if(e!=null && e instanceof LeaderNotAvailableException) {
                 kafkaProducer.send(producerRecord,this);
             }
         }
