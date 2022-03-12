@@ -30,6 +30,7 @@ that:
 in the last 6 seconds (configurable).
 • Fetched messages from the leader in the last 10 seconds (configurable).
 • Fetched the most recent messages from the leader in the last 10 seconds
+- Each produced record has to be replicated to all in-sync replicas before it is available for consumers.
 - How do the clients know where to send the requests? Kafka clients use another
 request type called a metadata request, which includes a list of topics the client is
 interested in. The server response specifies which partitions exist in the topics, the
