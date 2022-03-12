@@ -18,7 +18,7 @@ public class MyKafkaConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringDeserializer");
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringDeserializer");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG,"0");
-        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,3);// to make sure we don't run out of memory
+        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,3);// to make sure we don't ran out of memory
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false);
 
         kafkaConsumer=new KafkaConsumer<>(properties);
