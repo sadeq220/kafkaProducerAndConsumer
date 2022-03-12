@@ -17,6 +17,7 @@ public class MyKafkaProducer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);//spent at most 120 sec for each message sent , this includes retries (in case of leader election it will take up to 30 sec )
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,"MyCostumeProducerInterceptor");
 
         kafkaProducer = new KafkaProducer<>(properties);
