@@ -21,6 +21,13 @@ or on startup
 - Every broker in the cluster has a
 MetadataCache that includes a map of all brokers and all replicas in the cluster
 - partition= ( 1 Leader replica ) + ( * follower replica )
+` in-sync replica :`
+A replica is considered in-sync if it is the leader for a partition, or if it is a follower
+that:
+• Has an active session with Zookeeper—meaning, it sent a heartbeat to Zookeeper
+in the last 6 seconds (configurable).
+• Fetched messages from the leader in the last 10 seconds (configurable).
+• Fetched the most recent messages from the leader in the last 10 seconds
 - How do the clients know where to send the requests? Kafka clients use another
 request type called a metadata request, which includes a list of topics the client is
 interested in. The server response specifies which partitions exist in the topics, the
