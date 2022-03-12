@@ -9,7 +9,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MyKafkaConsumer {
-    private static final KafkaConsumer<String,String> kafkaConsumer;
+    private static final KafkaConsumer<String,String> kafkaConsumer;// consumer object is not thread safe
     private static Thread mainThread;
     public static final ConcurrentHashMap<TopicPartition, OffsetAndMetadata> CONCURRENT_HASH_MAP=new ConcurrentHashMap<>();
     static {
