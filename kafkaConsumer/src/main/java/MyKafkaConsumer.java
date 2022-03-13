@@ -2,11 +2,13 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import sun.misc.Unsafe;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MyKafkaConsumer {
     private static final KafkaConsumer<String,String> kafkaConsumer;// consumer object is not thread safe
@@ -56,10 +58,12 @@ public class MyKafkaConsumer {
             kafkaConsumer.close();
         }
     }
-    //TODO write lock-free atomic method
-    private static synchronized <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
-        System.out.println(consumerRecord.value());
-        MyKafkaConsumer.CONCURRENT_HASH_MAP.put(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),
-                new OffsetAndMetadata(consumerRecord.offset()+1,null));
+    /** lock-free atomic method - CAS  (Compare And Swap)
+        is widely used in the lock-free algorithms that can leverage the CAS processor instruction to provide great speedup compared to the standard pessimistic synchronization mechanism in Java
+     */
+    private static <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
+        MyKafkaConsumer.CONCURRENT_HASH_MAP.compute(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),(k,v)->{
+            System.out.println(consumerRecord.value());
+        return new OffsetAndMetadata(consumerRecord.offset()+1,null);});
     }
 }
