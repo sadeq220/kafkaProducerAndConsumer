@@ -19,6 +19,7 @@ public class MyKafkaProducer {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
         properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);//spent at most 120 sec for each message sent , this includes retries (in case of leader election it will take up to 30 sec )
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,"MyCostumeProducerInterceptor");
+        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,true);//send seq number and producer Id along message to identify duplicate messages by the broker
 
         kafkaProducer = new KafkaProducer<>(properties);
     }
@@ -77,6 +78,9 @@ public class MyKafkaProducer {
              * to guarantee reliability
              * resend on retryable errors
             */
+            /**
+             * It is always a good idea to use the built-in retry mechanism of the producer
+             */
             if(e!=null && e instanceof LeaderNotAvailableException) {
                 kafkaProducer.send(producerRecord,this);
             }
