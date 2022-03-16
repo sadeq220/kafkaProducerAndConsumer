@@ -53,14 +53,9 @@ public class MyKafkaProducer {
     public static RecordMetadata synchronousSendToKafka(KafkaProducer kafkaProducer,ProducerRecord producerRecord) throws ExecutionException, InterruptedException {
         Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
         /**
-         * resend on retryable errors
+         * producer built-in retries resend on retryable errors
          */
-        try{
-            future.get();
-        }catch (LeaderNotAvailableException e){
-            synchronousSendToKafka(kafkaProducer,producerRecord);
-        }
-        return future.get();
+          return  future.get();
     }
 
     /**
