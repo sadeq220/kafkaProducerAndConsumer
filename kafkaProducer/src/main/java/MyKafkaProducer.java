@@ -70,15 +70,12 @@ public class MyKafkaProducer {
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             /**
-             * to guarantee reliability
-             * resend on retryable errors
+             * to guarantee reliability , producer will
+             * resend on retryable errors(transient errors e.g. LeaderNotAvailableException)
             */
             /**
              * It is always a good idea to use the built-in retry mechanism of the producer
              */
-            if(e!=null && e instanceof LeaderNotAvailableException) {
-                kafkaProducer.send(producerRecord,this);
-            }
         }
     }
 }
