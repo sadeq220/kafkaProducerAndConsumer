@@ -8,11 +8,18 @@
         <outputRelativeToContentRoot value="true" />
         <module name="kafkaConsumer" />
         <module name="kafkaProducer" />
+        <module name="stream" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="kafkaConsumer" target="11" />
       <module name="kafkaProducer" target="11" />
+      <module name="stream" target="11" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="stream" options="-parameters" />
+    </option>
   </component>
 </project>

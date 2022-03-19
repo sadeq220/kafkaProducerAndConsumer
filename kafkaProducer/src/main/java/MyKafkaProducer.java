@@ -26,7 +26,7 @@ public class MyKafkaProducer {
     public static void main(String[] args) {
 
         try(kafkaProducer){
-            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("test", "javaKEY5", "javaVALUE5");
+            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("test", "javaKEY8", "javaVALUE8");
             RecordMetadata recordMetadata = synchronousSendToKafka(kafkaProducer, producerRecord);
 
             System.out.println(recordMetadata);

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/kafkaConsumer/kafkaConsumer.iml" filepath="$PROJECT_DIR$/kafkaConsumer/kafkaConsumer.iml" />
       <module fileurl="file://$PROJECT_DIR$/kafkaProducer/kafkaProducer.iml" filepath="$PROJECT_DIR$/kafkaProducer/kafkaProducer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/stream/stream.iml" filepath="$PROJECT_DIR$/stream/stream.iml" />
     </modules>
   </component>
 </project>
