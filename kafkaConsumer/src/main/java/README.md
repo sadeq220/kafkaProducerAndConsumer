@@ -15,3 +15,7 @@ bash bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092
 bash bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092
 --delete --group ${group.id}
 ```
+- non jvm based consumer(-C)/producer(-P) cli tool
+```shell
+kafkacat -b localhost:9092 -C -t test -f 'Topic %t [%p] at offset %o: key %k: %s\n'
+```
