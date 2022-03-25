@@ -6,6 +6,7 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -20,13 +21,18 @@ public class MyKafkaProducer {
         properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);//spent at most 120 sec for each message sent , this includes retries (in case of leader election it will take up to 30 sec )
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,"MyCostumeProducerInterceptor");
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,true);//send seq number and producer Id along message to identify duplicate messages by the broker
+        properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG,15_000);//kafka.timeout , default is 30s , wait time for a reply from the broker
 
         kafkaProducer = new KafkaProducer<>(properties);
     }
     public static void main(String[] args) {
-
+        Scanner scanner = new Scanner(System.in);
+        System.out.print( "message key : ");
+        String key = scanner.next();
+        System.out.print( "message value : ");
+        String value = scanner.next();
         try(kafkaProducer){
-            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("test", "javaKEY8", "javaVALUE8");
+            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("test", key, value);
             RecordMetadata recordMetadata = synchronousSendToKafka(kafkaProducer, producerRecord);
 
             System.out.println(recordMetadata);
