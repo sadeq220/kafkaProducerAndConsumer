@@ -11,6 +11,11 @@ public class HandleBalancing implements ConsumerRebalanceListener {
         this.kafkaConsumer = kafkaConsumer;
     }
 
+    /**
+     * this method will invoke on
+     * Partition rebalancing
+     * consumer client crash( cause by e.g. kill signal)
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
     kafkaConsumer.commitSync(MyKafkaConsumer.CONCURRENT_HASH_MAP);
