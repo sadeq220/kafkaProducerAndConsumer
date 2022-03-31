@@ -25,6 +25,8 @@ public class KafkaAdminClient {
         DescribeTopicsResult topicTest = adminClient.describeTopics(List.of(topicName));
         try{
             TopicDescription topicDescription = topicTest.values().get(topicName).get();
+            String result = String.format("topic called %s exists with %d partitions", topicName, topicDescription.partitions().size());
+            System.out.println(result);
         }catch (ExecutionException e){
             if (!(e.getCause() instanceof UnknownTopicOrPartitionException)){
            e.printStackTrace();
@@ -33,8 +35,9 @@ public class KafkaAdminClient {
             CreateTopicsResult topics = adminClient.createTopics(List.of(new NewTopic(topicName, Optional.empty(),Optional.empty())));
             /**
              * controller will send LeaderAndISR and UpdateMetadata api_keys to any broker in the cluster
-             * to notify them about new partition and leader of it , brokers also update their
-             * MetadataCache
+             * to notify them about new partition and leader of it , brokers also update their MetadataCache
+             *
+             * -note ISR stands for "In-Sync Replica's"
              */
             String result = String.format("topic named %s created with %d partitions", topicName, topics.numPartitions(topicName).get());
             System.out.println(result);
