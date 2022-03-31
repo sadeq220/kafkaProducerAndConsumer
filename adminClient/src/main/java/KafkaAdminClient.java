@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * we want to manage topics with AdminClient
  * Each method returns immediately after delivering a request to the
- * cluster Controller, and each method returns one or more Future objects
+ * cluster Controller, and each method returns one or more Future objects(KafkaFuture<T>)
  */
 public class KafkaAdminClient {
     private final static AdminClient adminClient;
