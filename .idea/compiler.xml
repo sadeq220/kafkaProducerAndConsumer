@@ -8,10 +8,12 @@
         <outputRelativeToContentRoot value="true" />
         <module name="kafkaConsumer" />
         <module name="kafkaProducer" />
+        <module name="adminClient" />
         <module name="stream" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="adminClient" target="11" />
       <module name="kafkaConsumer" target="11" />
       <module name="kafkaProducer" target="11" />
       <module name="stream" target="11" />
