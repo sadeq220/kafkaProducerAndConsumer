@@ -11,7 +11,7 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 
 @Configuration
-@ComponentScan({"kafkaDDLoperations"})
+@ComponentScan({"kafkaDDLoperations","kafkaOperations"})
 public class KafkaTopicBeans {
     private AdminClient adminClient;
     @Autowired
