@@ -1,8 +1,10 @@
 package ir.sadeqcloud.stream;
 
+import ir.sadeqcloud.stream.model.BusinessDomain;
 import org.apache.commons.collections4.list.FixedSizeList;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
@@ -19,6 +21,8 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +48,7 @@ public class KafkaStreamApplication {
     public static void main(String[] args) {
         SpringApplication.run(KafkaStreamApplication.class, args);
     }
+
     @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public KafkaStreamsConfiguration kafkaStreamsConfiguration(){
         HashMap<String, Object> kafkaStreamConfigs = new HashMap<>();
@@ -58,6 +63,13 @@ public class KafkaStreamApplication {
          *     As the prefix of internal Kafka topic names
          */
         return new KafkaStreamsConfiguration(kafkaStreamConfigs);
+    }
+    @Bean(name = "BusinessDomainSerde")
+    public Serde<BusinessDomain> serializerAndDeserializerForBusinessDomain(){
+        JsonSerializer<BusinessDomain> kafkaJsonSerializer = new JsonSerializer<>();
+        JsonDeserializer<BusinessDomain> kafkaJsonDeserializer=new JsonDeserializer<>(BusinessDomain.class);
+        Serde<BusinessDomain> businessDomainSerde = Serdes.serdeFrom(kafkaJsonSerializer, kafkaJsonDeserializer);
+        return businessDomainSerde;
     }
     @Bean
     /**

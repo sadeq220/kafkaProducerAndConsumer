@@ -42,7 +42,7 @@ public class MyKafkaConsumer {
         }));
             kafkaConsumer.subscribe(List.of("test"),new HandleBalancing(kafkaConsumer));
 
-        Duration duration = Duration.ofSeconds(1l);
+        Duration duration = Duration.ofSeconds(3l);
         try {
         while(true){
 
