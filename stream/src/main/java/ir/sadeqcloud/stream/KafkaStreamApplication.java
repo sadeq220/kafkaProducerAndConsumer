@@ -64,6 +64,10 @@ public class KafkaStreamApplication {
          */
         return new KafkaStreamsConfiguration(kafkaStreamConfigs);
     }
+
+    /**
+     * By default, Kafka Streams assumes data type <byte[],byte[]>
+     */
     @Bean(name = "BusinessDomainSerde")
     public Serde<BusinessDomain> serializerAndDeserializerForBusinessDomain(){
         JsonSerializer<BusinessDomain> kafkaJsonSerializer = new JsonSerializer<>();

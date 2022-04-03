@@ -53,7 +53,7 @@ public class MyProcessor {
             associatedNumber = matcher.group(2);
             mainPart=matcher.group(1);
             }
-            BusinessDomain businessDomain = BusinessDomain.builderFactory().setMainPart(mainPart).setAssociatedNumber(Long.valueOf(associatedNumber)).setProcessTime(LocalDateTime.now());
+            BusinessDomain businessDomain = BusinessDomain.builderFactory().setMainPart(mainPart).setAssociatedNumber(associatedNumber!=null?Long.valueOf(associatedNumber):null).setProcessTime(LocalDateTime.now());
             return businessDomain;
         });
         /**
@@ -62,7 +62,14 @@ public class MyProcessor {
          * You can embed it in a chain of processors without the need for a separate print statement.
          */
         processorNode.peek((k,v)->System.out.println(k));
-        processorNode.to(outputTopicName, Produced.with(Serdes.String(),businessDomainSerde));
+        /**
+         * filter-out null messages
+         */
+        KStream<String, BusinessDomain> filteringProcessorNode = processorNode.filter((k, v) -> v.getMainPart() != null);
+        /**
+         * sink node .produce new messages to kafka cluster
+         */
+        filteringProcessorNode.to(outputTopicName, Produced.with(Serdes.String(),businessDomainSerde));
         return sourceNode;
     }
 }
