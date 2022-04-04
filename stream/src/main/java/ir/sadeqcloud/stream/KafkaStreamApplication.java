@@ -1,6 +1,8 @@
 package ir.sadeqcloud.stream;
 
+import ir.sadeqcloud.stream.constants.Constants;
 import ir.sadeqcloud.stream.model.BusinessDomain;
+import ir.sadeqcloud.stream.model.DomainAccumulator;
 import org.apache.commons.collections4.list.FixedSizeList;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -11,10 +13,15 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
@@ -45,6 +52,7 @@ public class KafkaStreamApplication {
         this.outputTopicName=outputTopicName;
         this.brokers= Collections.unmodifiableList(brokers);
     }
+    @DependsOn({"constants"})
     public static void main(String[] args) {
         SpringApplication.run(KafkaStreamApplication.class, args);
     }
@@ -75,11 +83,33 @@ public class KafkaStreamApplication {
         Serde<BusinessDomain> businessDomainSerde = Serdes.serdeFrom(kafkaJsonSerializer, kafkaJsonDeserializer);
         return businessDomainSerde;
     }
+    @Bean(name = "DomainAccumulatorSerde")
+    public Serde<DomainAccumulator> serializerAndDeserializerForDomainAccumulator(){
+        JsonSerializer<DomainAccumulator> kafkaJsonSerializer = new JsonSerializer<>();
+        JsonDeserializer<DomainAccumulator> kafkaJsonDeserializer=new JsonDeserializer<>(DomainAccumulator.class);
+        Serde<DomainAccumulator> businessDomainSerde = Serdes.serdeFrom(kafkaJsonSerializer, kafkaJsonDeserializer);
+        return businessDomainSerde;
+    }
+    /**
+    * adding a state store to our topology
+    * kafka stream binder create state stores and pass them along with
+    * the underlying StreamsBuilder through the StreamsBuilderFactoryBean ; TODO : didn't work
+    */
+    @Bean
+    public static StoreBuilder buildStoreState(){
+        KeyValueBytesStoreSupplier keyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(Constants.getStateStoreName());
+        return Stores.keyValueStoreBuilder(keyValueBytesStoreSupplier,Serdes.String(),Serdes.Long());
+    }
     @Bean
     /**
      * create our topic
      */
     public NewTopic createTopic(){
         return TopicBuilder.name(outputTopicName).partitions(1).replicas(1).build();
+    }
+
+    @Bean("stateTopic")
+    public NewTopic createTopicTesting(){
+        return TopicBuilder.name(Constants.getAccumulatedDomainTopicName()).partitions(1).replicas(1).build();
     }
 }

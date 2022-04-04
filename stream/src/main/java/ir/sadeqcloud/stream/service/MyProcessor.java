@@ -1,17 +1,23 @@
 package ir.sadeqcloud.stream.service;
 
+import ir.sadeqcloud.stream.constants.Constants;
 import ir.sadeqcloud.stream.model.BusinessDomain;
+import ir.sadeqcloud.stream.model.BusinessDomainValueTransformer;
+import ir.sadeqcloud.stream.model.DomainAccumulator;
 import jdk.jshell.JShell;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.state.StoreBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -28,21 +34,26 @@ public class MyProcessor {
     private StreamsBuilder streamsBuilder;
     private final String outputTopicName;
     private final Serde<BusinessDomain> businessDomainSerde;
+    private final Serde<DomainAccumulator> domainAccumulatorSerde;
 
     @Autowired
     public MyProcessor(StreamsBuilder streamsBuilder,
                        @Value("${kafka.streams.output.topic.name}") String outputTopicName,
                        StreamsBuilderFactoryBean factoryBean,
-                       @Qualifier("BusinessDomainSerde")Serde<BusinessDomain> businessDomainSerde){
+                       @Qualifier("BusinessDomainSerde")Serde<BusinessDomain> businessDomainSerde,
+                       @Qualifier("DomainAccumulatorSerde")Serde<DomainAccumulator> domainAccumulatorSerde){
         this.streamsBuilder=streamsBuilder;
         this.outputTopicName=outputTopicName;
         this.businessDomainSerde=businessDomainSerde;
+        this.domainAccumulatorSerde=domainAccumulatorSerde;
     }
-    @Bean
+    @Bean(name = "businessDomainNode")
     /**
      * subscribe to at least one source topic or global table
+     * using a high-level DSL
      */
-    public KStream<String,String> topologyCreation(StreamsBuilder streamsBuilder){
+    public KStream<String,BusinessDomain> topologyCreation(StreamsBuilder streamsBuilder, StoreBuilder storeBuilder){
+        streamsBuilder.addStateStore(storeBuilder);
         KStream<String, String> sourceNode = streamsBuilder.stream("test", Consumed.with(Serdes.serdeFrom(String.class), Serdes.serdeFrom(String.class)));
         KStream<String, BusinessDomain> processorNode = sourceNode.mapValues((k, v) -> {
             Pattern compile = Pattern.compile("([a-zA-Z]+)([0-9]*)");
@@ -70,6 +81,18 @@ public class MyProcessor {
          * sink node .produce new messages to kafka cluster
          */
         filteringProcessorNode.to(outputTopicName, Produced.with(Serdes.String(),businessDomainSerde));
-        return sourceNode;
+        return filteringProcessorNode;
+    }
+
+    /**
+     * One quick note about the usage of the processor API in Kafka Streams binder-based applications.
+     * The only way you can use the low-level processor API when you use the binder
+     * is through a usage pattern of higher-level DSL and then combine that with a transform or process call on it
+     */
+    @Bean(name = "terminalNode")
+    public Void changeKey(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+        kStream.transformValues(()->new BusinessDomainValueTransformer(Constants.getStateStoreName()),Constants.getStateStoreName())
+        .to(Constants.getAccumulatedDomainTopicName(),Produced.with(Serdes.String(),domainAccumulatorSerde));
+        return null;
     }
 }
