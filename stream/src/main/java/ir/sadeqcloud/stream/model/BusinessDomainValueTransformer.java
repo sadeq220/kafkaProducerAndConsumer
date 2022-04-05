@@ -6,6 +6,10 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.state.KeyValueStore;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 /**
  * using the processor API of Kafka Streams
  * @see <a href="https://docs.confluent.io/platform/current/streams/developer-guide/processor-api.html" />
@@ -32,11 +36,17 @@ public class BusinessDomainValueTransformer implements ValueTransformer<Business
     @Override
     public DomainAccumulator transform(BusinessDomain businessDomain) {
         DomainAccumulator domainAccumulator = DomainAccumulator.builderFactory(businessDomain);
-        Long accumulatedNumSoFar = stateStore.get(domainAccumulator.getMainPart());
-        if (accumulatedNumSoFar!=null){
-        domainAccumulator.addAccumulatedAssociatedNumber(accumulatedNumSoFar);
+        // get a "data record" metadata
+        long timestamp = processorContext.timestamp();
+        LocalDateTime localDateTime = Instant.ofEpochMilli(timestamp).atOffset(ZoneOffset.ofHoursMinutes(4, 30)).toLocalDateTime();
+        //
+        if (localDateTime.isAfter(LocalDateTime.now().minusHours(1))) {
+            Long accumulatedNumSoFar = stateStore.get(domainAccumulator.getMainPart());
+            if (accumulatedNumSoFar != null) {
+                domainAccumulator.addAccumulatedAssociatedNumber(accumulatedNumSoFar);
+            }
+            stateStore.put(domainAccumulator.getMainPart(), domainAccumulator.getAccumulatedAssociatedNumber());
         }
-        stateStore.put(domainAccumulator.getMainPart(),domainAccumulator.getAccumulatedAssociatedNumber());
         return domainAccumulator;
     }
 

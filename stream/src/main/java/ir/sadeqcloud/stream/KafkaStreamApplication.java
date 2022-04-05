@@ -70,6 +70,7 @@ public class KafkaStreamApplication {
          *     As the name of the subdirectory in the state directory (cf. state.dir)
          *     As the prefix of internal Kafka topic names
          */
+        kafkaStreamConfigs.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,1);//default one , use more when subscribing to 2 or more partitions ,for parallelism.
         return new KafkaStreamsConfiguration(kafkaStreamConfigs);
     }
 
@@ -91,12 +92,16 @@ public class KafkaStreamApplication {
         return businessDomainSerde;
     }
     /**
-    * adding a state store to our topology
+    * adding a in-memory state store to our topology
     * kafka stream binder create state stores and pass them along with
     * the underlying StreamsBuilder through the StreamsBuilderFactoryBean ; TODO : didn't work
     */
     @Bean
     public static StoreBuilder buildStoreState(){
+        /**
+         * All the StateStoreSupplier types have logging enabled by default
+         * By default, Kafka Streams creates changelog topics with a delete policy of compact .
+         */
         KeyValueBytesStoreSupplier keyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(Constants.getStateStoreName());
         return Stores.keyValueStoreBuilder(keyValueBytesStoreSupplier,Serdes.String(),Serdes.Long());
     }
