@@ -101,6 +101,7 @@ public class KafkaStreamApplication {
         /**
          * All the StateStoreSupplier types have logging enabled by default
          * By default, Kafka Streams creates changelog topics with a delete policy of compact .
+         * In a changelog, each incoming record overwrites the previous one with the same key.
          */
         KeyValueBytesStoreSupplier keyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(Constants.getStateStoreName());
         return Stores.keyValueStoreBuilder(keyValueBytesStoreSupplier,Serdes.String(),Serdes.Long());
