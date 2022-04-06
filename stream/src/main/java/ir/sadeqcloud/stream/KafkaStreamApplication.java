@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * https://docs.spring.io/spring-kafka/docs/2.6.2/reference/html/#streams-spring
+ */
 @SpringBootApplication
 @Import({KafkaProducerConfiguration.class})
 @EnableKafka
@@ -95,7 +98,7 @@ public class KafkaStreamApplication {
     /**
     * adding a in-memory state store to our topology
     * kafka stream binder create state stores and pass them along with
-    * the underlying StreamsBuilder through the StreamsBuilderFactoryBean ; TODO : didn't work
+    * the underlying StreamsBuilder through the StreamsBuilderFactoryBean ; TODO : StreamsBuilderFactoryBean infrastructureCustomizer -this allows customization of the StreamsBuilder (e.g. to add a state store) and/or the Topology before the stream is created
     */
     @Bean
     public static StoreBuilder buildStoreState(){

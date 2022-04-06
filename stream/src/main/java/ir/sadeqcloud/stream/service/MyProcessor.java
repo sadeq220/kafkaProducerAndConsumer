@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -107,7 +109,8 @@ public class MyProcessor {
     @Bean(name="aggregator")
     public Void preserveHighAssociatedNumbers(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
 
-        kStream.groupBy((k,v)->v.getMainPart())//define group key(GK) & create sub-streams
+        kStream.groupBy((k,v)->v.getMainPart(),//define group key(GK) & create sub-streams
+                        Grouped.with(stringSerde,businessDomainSerde))
                 /**
                  * aggregates the most recent records with the same key
                  */
