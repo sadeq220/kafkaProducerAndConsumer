@@ -4,14 +4,14 @@ import ir.sadeqcloud.stream.constants.Constants;
 import ir.sadeqcloud.stream.model.BusinessDomain;
 import ir.sadeqcloud.stream.model.BusinessDomainValueTransformer;
 import ir.sadeqcloud.stream.model.DomainAccumulator;
+import ir.sadeqcloud.stream.utils.FixedPriorityQueueSerde;
+import ir.sadeqcloud.stream.utils.FixedSizePriorityQueue;
 import jdk.jshell.JShell;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,6 +35,7 @@ public class MyProcessor {
     private final String outputTopicName;
     private final Serde<BusinessDomain> businessDomainSerde;
     private final Serde<DomainAccumulator> domainAccumulatorSerde;
+    private final Serde<String> stringSerde=Serdes.String();
 
     @Autowired
     public MyProcessor(StreamsBuilder streamsBuilder,
@@ -90,9 +91,30 @@ public class MyProcessor {
      * is through a usage pattern of higher-level DSL and then combine that with a transform or process call on it
      */
     @Bean(name = "terminalNode")
-    public Void changeKey(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+    public Void useStateStore(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
         kStream.transformValues(()->new BusinessDomainValueTransformer(Constants.getStateStoreName()),Constants.getStateStoreName())
         .to(Constants.getAccumulatedDomainTopicName(),Produced.with(Serdes.String(),domainAccumulatorSerde));
+        return null;
+    }
+
+    /**
+     * Aggregations are key-based operations
+     * you can perform aggregations on windowed or non-windowed data
+     * Aggregation works in the same manner as KTable
+     * Aggregation is a generalization of 'reduce'
+     * assume aggregation use of KeyValueStore<GK,VA>
+     */
+    @Bean(name="aggregator")
+    public Void preserveHighAssociatedNumbers(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+
+        kStream.groupBy((k,v)->v.getMainPart())//define group key(GK) & create sub-streams
+                /**
+                 * aggregates the most recent records with the same key
+                 */
+                .aggregate(()->new FixedSizePriorityQueue(3,BusinessDomain.class),//initializer , initialize VA ,called per new key(GK) arrive
+                (k,v,va)->va.add(v), //adder , define new VA
+                Materialized.with(stringSerde,new FixedPriorityQueueSerde()) // materialize state store
+                          );
         return null;
     }
 }

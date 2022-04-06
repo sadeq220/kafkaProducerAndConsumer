@@ -70,6 +70,7 @@ public class KafkaStreamApplication {
          *     As the name of the subdirectory in the state directory (cf. state.dir)
          *     As the prefix of internal Kafka topic names
          */
+        kafkaStreamConfigs.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,10_000);//define KTable cache interval flush
         kafkaStreamConfigs.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,1);//default one , use more when subscribing to 2 or more partitions ,for parallelism.
         return new KafkaStreamsConfiguration(kafkaStreamConfigs);
     }

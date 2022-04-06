@@ -3,7 +3,7 @@ package ir.sadeqcloud.stream.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class BusinessDomain implements Serializable {
+public class BusinessDomain implements Serializable,Comparable<BusinessDomain> {
     private String mainPart;
     private Long associatedNumber;
     private LocalDateTime processTime;
@@ -45,5 +45,13 @@ public class BusinessDomain implements Serializable {
      */
     public String toString() {
         return super.toString();
+    }
+
+    @Override
+    /**
+     * used in TreeSet
+     */
+    public int compareTo(BusinessDomain businessDomain) {
+        return this.associatedNumber.compareTo(businessDomain.associatedNumber);
     }
 }
