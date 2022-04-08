@@ -57,8 +57,4 @@ public class FixedSizePriorityQueue<T extends SetBaseCompliance> {
         return inner;
     }
 
-    @JsonSetter("Domains")
-    private void setInner(TreeSet<T> set){
-        this.inner=set;
-    }
 }

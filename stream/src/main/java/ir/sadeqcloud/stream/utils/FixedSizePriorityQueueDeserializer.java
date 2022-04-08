@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Map;
 @Component
-public class FixedSizePriorityQueueDeserializer implements Deserializer<FixedSizePriorityQueue<SetBaseCompliance>> {
+public class FixedSizePriorityQueueDeserializer implements Deserializer<FixedSizePriorityQueue> {
 
     private final ObjectMapper objectMapper;
     @Autowired
@@ -29,14 +29,18 @@ public class FixedSizePriorityQueueDeserializer implements Deserializer<FixedSiz
     }
 
     @Override
-    public FixedSizePriorityQueue<SetBaseCompliance> deserialize(String s, byte[] bytes) {
-        FixedSizePriorityQueue<SetBaseCompliance> fixedSizePriorityQueue=null;
+    public FixedSizePriorityQueue deserialize(String s, byte[] bytes) {
+        FixedSizePriorityQueue fixedSizePriorityQueue=null;
         try {
             JsonNode jsonNode = objectMapper.readTree(bytes);
             JsonNode domains = jsonNode.path("Domains");
             if (domains.isArray()){
                 ArrayNode domainArray=(ArrayNode) domains;
-                FixedSizePriorityQueue<SetBaseCompliance> deserializedResult = new FixedSizePriorityQueue<>(domainArray.size());
+                /**
+                 * deserializedResult implies FixedSizePriorityQueue<SetBaseCompliance>
+                 */
+                FixedSizePriorityQueue deserializedResult = new FixedSizePriorityQueue<>(3);
+
                 for (int i=0;i<domainArray.size();i++){
                     JsonNode jn = domainArray.get(i);
                     SetBaseCompliance deserializerBaseUtil = objectMapper.treeToValue(jn, SetBaseCompliance.class);

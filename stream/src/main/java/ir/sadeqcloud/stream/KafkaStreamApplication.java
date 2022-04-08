@@ -100,8 +100,8 @@ public class KafkaStreamApplication {
         return businessDomainSerde;
     }
     @Bean(name = "FixedSizePriorityQueueSerde")
-    public Serde<FixedSizePriorityQueue<SetBaseCompliance>> serializerAndDeserializerForPriorityQueue(FixedSizePriorityQueueSerializer fixedSizePriorityQueueSerializer, FixedSizePriorityQueueDeserializer fixedSizePriorityQueueDeserializer){
-        Serde<FixedSizePriorityQueue<SetBaseCompliance>> fixedSizePriorityQueueSerde = Serdes.serdeFrom(fixedSizePriorityQueueSerializer,fixedSizePriorityQueueDeserializer);
+    public Serde<FixedSizePriorityQueue> serializerAndDeserializerForPriorityQueue(FixedSizePriorityQueueSerializer fixedSizePriorityQueueSerializer, FixedSizePriorityQueueDeserializer fixedSizePriorityQueueDeserializer){
+        Serde<FixedSizePriorityQueue> fixedSizePriorityQueueSerde = Serdes.serdeFrom(fixedSizePriorityQueueSerializer,fixedSizePriorityQueueDeserializer);
         return fixedSizePriorityQueueSerde;
     }
     /**

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class FixedSizePriorityQueueSerializer implements Serializer<FixedSizePriorityQueue<SetBaseCompliance>> {
+public class FixedSizePriorityQueueSerializer implements Serializer<FixedSizePriorityQueue> {
 
     private final ObjectMapper objectMapper;
 
@@ -28,7 +28,7 @@ public class FixedSizePriorityQueueSerializer implements Serializer<FixedSizePri
     }
 
     @Override
-    public byte[] serialize(String topic, FixedSizePriorityQueue<SetBaseCompliance> tFixedSizePriorityQueue) {
+    public byte[] serialize(String topic, FixedSizePriorityQueue tFixedSizePriorityQueue) {
         byte[] bytes=null;
         if (tFixedSizePriorityQueue != null) {
             try {
@@ -41,7 +41,7 @@ public class FixedSizePriorityQueueSerializer implements Serializer<FixedSizePri
     }
 
     @Override
-    public byte[] serialize(String topic, Headers headers, FixedSizePriorityQueue<SetBaseCompliance> data) {
+    public byte[] serialize(String topic, Headers headers, FixedSizePriorityQueue data) {
         return Serializer.super.serialize(topic, headers, data);
     }
 

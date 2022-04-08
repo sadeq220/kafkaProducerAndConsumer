@@ -56,6 +56,6 @@ public class BusinessDomain implements SetBaseCompliance {
         if (!(o instanceof BusinessDomain))
             throw new IllegalArgumentException(o.getClass().toString()+"is not type of"+this.getClass().toString());
         BusinessDomain businessDomain = (BusinessDomain) o;
-        return this.associatedNumber.compareTo(businessDomain.associatedNumber);
+        return businessDomain.associatedNumber.compareTo(associatedNumber);
     }
 }
