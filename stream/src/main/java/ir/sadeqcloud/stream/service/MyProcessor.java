@@ -16,6 +16,7 @@ import org.apache.kafka.streams.kstream.internals.MaterializedInternal;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.WindowStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -139,12 +140,17 @@ public class MyProcessor {
      * method "preserveHighAssociatedNumbers" define rolling aggregation , here we want to define Windowed aggregation
      * windowing allows us to take snapshot of aggregation over a given timeframe
      * there are four types of windows, here we used 'Hopping window'
-     * assume windowed aggregation use of KTable<Windowed<GK>, VA>
+     * assume windowed aggregation use of WindowStore<Windowed<GK>, VA>
      */
     public String retentionOfAssociatedNumbersOverTimeFrame(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+        Materialized<String,Long, WindowStore<Bytes,byte[]>> countByMainPart = Materialized.as("countByMainPart");
+        countByMainPart.withKeySerde(stringSerde);
+        countByMainPart.withValueSerde(Serdes.Long());
+
         TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5))//no Grace means late events will be rejected
                 .advanceBy(Duration.ofMinutes(1));//hopping window ( advance < size )
-        KTable<Windowed<String>, Long> count = kStream.groupBy((k, v) -> v.getMainPart(), Grouped.with(stringSerde, businessDomainSerde)).windowedBy(timeWindows).count(Materialized.with(stringSerde,Serdes.Long()));
+
+        KTable<Windowed<String>, Long> count = kStream.groupBy((k, v) -> v.getMainPart(), Grouped.with(stringSerde, businessDomainSerde)).windowedBy(timeWindows).count(countByMainPart);
         return count.queryableStoreName();
     }
 }

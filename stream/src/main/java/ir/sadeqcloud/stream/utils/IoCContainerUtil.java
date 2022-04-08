@@ -23,4 +23,7 @@ public class IoCContainerUtil implements ApplicationContextAware {
     public static <T> T getBean(Class<T> tClass){
         return applicationContext.getBean(tClass);
     }
+    public static <T> T getBean(Class<T> tClass,String beanName){
+        return applicationContext.getBean(beanName,tClass);
+    }
 }
