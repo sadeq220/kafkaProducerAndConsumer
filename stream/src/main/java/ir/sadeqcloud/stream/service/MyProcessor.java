@@ -27,13 +27,15 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
 /**
- * to create your processor topology
+ * to create your processor topology(with high-level DSL)
+ * <a href="https://kafka.apache.org/20/documentation/streams/developer-guide/dsl-api.html" />
  */
 public class MyProcessor {
     private StreamsBuilder streamsBuilder;
@@ -112,12 +114,15 @@ public class MyProcessor {
      * Aggregation is a generalization of 'reduce'
      * assume aggregation use of KeyValueStore<GK,VA>
      */
-    @Bean(name="aggregator")
+    @Bean(name="rollingAggregator")
     public Void preserveHighAssociatedNumbers(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
         Materialized<String, FixedSizePriorityQueue, KeyValueStore<Bytes,byte[]>> highDomainsStore = Materialized.as("highDomainsStore");
         highDomainsStore.withKeySerde(stringSerde);
         highDomainsStore.withValueSerde(fixedSizePriorityQueueSerde);
-
+        /**
+         * groupBy always causes data 're-partitioning'
+         * TODO 're-partitioning?'
+         */
         kStream.groupBy((k,v)->v.getMainPart(),//define group key(GK) & create sub-streams
                         Grouped.with(stringSerde,businessDomainSerde))
                 /**
@@ -128,5 +133,18 @@ public class MyProcessor {
                 highDomainsStore // materialize state store
                           );
         return null;
+    }
+    @Bean("windowedAggregator")
+    /**
+     * method "preserveHighAssociatedNumbers" define rolling aggregation , here we want to define Windowed aggregation
+     * windowing allows us to take snapshot of aggregation over a given timeframe
+     * there are four types of windows, here we used 'Hopping window'
+     * assume windowed aggregation use of KTable<Windowed<GK>, VA>
+     */
+    public String retentionOfAssociatedNumbersOverTimeFrame(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+        TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5))//no Grace means late events will be rejected
+                .advanceBy(Duration.ofMinutes(1));//hopping window ( advance < size )
+        KTable<Windowed<String>, Long> count = kStream.groupBy((k, v) -> v.getMainPart(), Grouped.with(stringSerde, businessDomainSerde)).windowedBy(timeWindows).count(Materialized.with(stringSerde,Serdes.Long()));
+        return count.queryableStoreName();
     }
 }
