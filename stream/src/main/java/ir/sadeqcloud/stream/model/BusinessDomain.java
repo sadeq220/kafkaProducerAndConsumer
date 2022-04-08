@@ -1,9 +1,10 @@
 package ir.sadeqcloud.stream.model;
 
-import java.io.Serializable;
+import ir.sadeqcloud.stream.utils.SetBaseCompliance;
+
 import java.time.LocalDateTime;
 
-public class BusinessDomain implements Serializable,Comparable<BusinessDomain> {
+public class BusinessDomain implements SetBaseCompliance {
     private String mainPart;
     private Long associatedNumber;
     private LocalDateTime processTime;
@@ -51,7 +52,10 @@ public class BusinessDomain implements Serializable,Comparable<BusinessDomain> {
     /**
      * used in TreeSet
      */
-    public int compareTo(BusinessDomain businessDomain) {
+    public int compareTo(Object o) {
+        if (!(o instanceof BusinessDomain))
+            throw new IllegalArgumentException(o.getClass().toString()+"is not type of"+this.getClass().toString());
+        BusinessDomain businessDomain = (BusinessDomain) o;
         return this.associatedNumber.compareTo(businessDomain.associatedNumber);
     }
 }

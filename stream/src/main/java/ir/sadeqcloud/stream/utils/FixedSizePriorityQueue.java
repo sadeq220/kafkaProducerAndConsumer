@@ -1,6 +1,9 @@
 package ir.sadeqcloud.stream.utils;
 
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -10,7 +13,7 @@ import java.util.TreeSet;
  * When the maximum number of elements is reached the lowest/highest element
  * will be removed.
  */
-public class FixedSizePriorityQueue<T> {
+public class FixedSizePriorityQueue<T extends SetBaseCompliance> {
     private TreeSet<T> inner;
     private int maxSize;
 
@@ -18,7 +21,7 @@ public class FixedSizePriorityQueue<T> {
         this.inner = new TreeSet<>(comparator);
         this.maxSize = maxSize;
     }
-    public FixedSizePriorityQueue(int maxSize,Class<? extends Comparable<T>> type){
+    public FixedSizePriorityQueue(int maxSize){
         this.maxSize=maxSize;
         inner=new TreeSet();
     }
@@ -45,9 +48,17 @@ public class FixedSizePriorityQueue<T> {
     @Override
     public String toString() {
         return "FixedSizePriorityQueue{" +
-                "QueueContents=" + inner;
+                "QueueContents:" + inner+"}";
 
     }
 
+    @JsonGetter("Domains")
+    private TreeSet<T> getInner(){
+        return inner;
+    }
 
+    @JsonSetter("Domains")
+    private void setInner(TreeSet<T> set){
+        this.inner=set;
+    }
 }

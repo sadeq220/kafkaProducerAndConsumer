@@ -4,14 +4,17 @@ import ir.sadeqcloud.stream.constants.Constants;
 import ir.sadeqcloud.stream.model.BusinessDomain;
 import ir.sadeqcloud.stream.model.BusinessDomainValueTransformer;
 import ir.sadeqcloud.stream.model.DomainAccumulator;
-import ir.sadeqcloud.stream.utils.FixedPriorityQueueSerde;
 import ir.sadeqcloud.stream.utils.FixedSizePriorityQueue;
 import jdk.jshell.JShell;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.kstream.internals.MaterializedInternal;
+import org.apache.kafka.streams.processor.StateStore;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,17 +41,20 @@ public class MyProcessor {
     private final Serde<BusinessDomain> businessDomainSerde;
     private final Serde<DomainAccumulator> domainAccumulatorSerde;
     private final Serde<String> stringSerde=Serdes.String();
+    private final Serde<FixedSizePriorityQueue> fixedSizePriorityQueueSerde;
 
     @Autowired
     public MyProcessor(StreamsBuilder streamsBuilder,
                        @Value("${kafka.streams.output.topic.name}") String outputTopicName,
                        StreamsBuilderFactoryBean factoryBean,
                        @Qualifier("BusinessDomainSerde")Serde<BusinessDomain> businessDomainSerde,
-                       @Qualifier("DomainAccumulatorSerde")Serde<DomainAccumulator> domainAccumulatorSerde){
+                       @Qualifier("DomainAccumulatorSerde")Serde<DomainAccumulator> domainAccumulatorSerde,
+                       @Qualifier("FixedSizePriorityQueueSerde") Serde<FixedSizePriorityQueue> fixedSizePriorityQueueSerde){
         this.streamsBuilder=streamsBuilder;
         this.outputTopicName=outputTopicName;
         this.businessDomainSerde=businessDomainSerde;
         this.domainAccumulatorSerde=domainAccumulatorSerde;
+        this.fixedSizePriorityQueueSerde=fixedSizePriorityQueueSerde;
     }
     @Bean(name = "businessDomainNode")
     /**
@@ -108,15 +114,18 @@ public class MyProcessor {
      */
     @Bean(name="aggregator")
     public Void preserveHighAssociatedNumbers(@Qualifier("businessDomainNode")KStream<String,BusinessDomain> kStream){
+        Materialized<String, FixedSizePriorityQueue, KeyValueStore<Bytes,byte[]>> highDomainsStore = Materialized.as("highDomainsStore");
+        highDomainsStore.withKeySerde(stringSerde);
+        highDomainsStore.withValueSerde(fixedSizePriorityQueueSerde);
 
         kStream.groupBy((k,v)->v.getMainPart(),//define group key(GK) & create sub-streams
                         Grouped.with(stringSerde,businessDomainSerde))
                 /**
                  * aggregates the most recent records with the same key
                  */
-                .aggregate(()->new FixedSizePriorityQueue(3,BusinessDomain.class),//initializer , initialize VA ,called per new key(GK) arrive
+                .aggregate(()->new FixedSizePriorityQueue<BusinessDomain>(3),//initializer , initialize VA ,called per new key(GK) arrive
                 (k,v,va)->va.add(v), //adder , define new VA
-                Materialized.with(stringSerde,new FixedPriorityQueueSerde()) // materialize state store
+                highDomainsStore // materialize state store
                           );
         return null;
     }

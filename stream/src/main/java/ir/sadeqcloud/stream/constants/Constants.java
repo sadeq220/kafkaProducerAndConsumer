@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-
+/**
+ * TODO use @ConfigurationProperties instead of @Component
+ */
 @Component("constants")
 public class Constants {
     private static String stateStoreName;

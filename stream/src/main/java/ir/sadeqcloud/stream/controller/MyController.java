@@ -33,7 +33,7 @@ public class MyController {
     @GetMapping("/")
     public ResponseEntity home(@RequestParam(name = "main") String mainPart){
         KafkaStreams kafkaStreams = streamsBuilderFactory.getKafkaStreams();
-        ReadOnlyKeyValueStore<Object, Object> highNumbersStore = kafkaStreams.store(StoreQueryParameters.fromNameAndType("highNumbersStore", QueryableStoreTypes.keyValueStore()));
+        ReadOnlyKeyValueStore<Object, Object> highNumbersStore = kafkaStreams.store(StoreQueryParameters.fromNameAndType("highDomainsStore", QueryableStoreTypes.keyValueStore()));
         return ResponseEntity.ok(highNumbersStore.get(mainPart));
     }
 }

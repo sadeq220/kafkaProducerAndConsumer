@@ -3,6 +3,10 @@ package ir.sadeqcloud.stream;
 import ir.sadeqcloud.stream.constants.Constants;
 import ir.sadeqcloud.stream.model.BusinessDomain;
 import ir.sadeqcloud.stream.model.DomainAccumulator;
+import ir.sadeqcloud.stream.utils.FixedSizePriorityQueue;
+import ir.sadeqcloud.stream.utils.FixedSizePriorityQueueDeserializer;
+import ir.sadeqcloud.stream.utils.FixedSizePriorityQueueSerializer;
+import ir.sadeqcloud.stream.utils.SetBaseCompliance;
 import org.apache.commons.collections4.list.FixedSizeList;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -95,6 +99,11 @@ public class KafkaStreamApplication {
         Serde<DomainAccumulator> businessDomainSerde = Serdes.serdeFrom(kafkaJsonSerializer, kafkaJsonDeserializer);
         return businessDomainSerde;
     }
+    @Bean(name = "FixedSizePriorityQueueSerde")
+    public Serde<FixedSizePriorityQueue<SetBaseCompliance>> serializerAndDeserializerForPriorityQueue(FixedSizePriorityQueueSerializer fixedSizePriorityQueueSerializer, FixedSizePriorityQueueDeserializer fixedSizePriorityQueueDeserializer){
+        Serde<FixedSizePriorityQueue<SetBaseCompliance>> fixedSizePriorityQueueSerde = Serdes.serdeFrom(fixedSizePriorityQueueSerializer,fixedSizePriorityQueueDeserializer);
+        return fixedSizePriorityQueueSerde;
+    }
     /**
     * adding a in-memory state store to our topology
     * kafka stream binder create state stores and pass them along with
@@ -103,8 +112,8 @@ public class KafkaStreamApplication {
     @Bean
     public static StoreBuilder buildStoreState(){
         /**
-         * All the StateStoreSupplier types have logging enabled by default
-         * By default, Kafka Streams creates changelog topics with a delete policy of compact .
+         * All the StateStoreSupplier types have logging enabled by default .
+         * By default, Kafka Streams creates changelog topics with delete policy of compact .
          * In a changelog, each incoming record overwrites the previous one with the same key.
          */
         KeyValueBytesStoreSupplier keyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(Constants.getStateStoreName());
