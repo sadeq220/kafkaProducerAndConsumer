@@ -23,6 +23,8 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class MyController {
@@ -44,8 +46,14 @@ public class MyController {
     public ResponseEntity countedEvents(@RequestParam(name = "main") String mainPart){
         KafkaStreams kafkaStreams = streamsBuilderFactory.getKafkaStreams();
         String countStore = IoCContainerUtil.getBean(String.class, "windowedAggregator");
+        Map map=new HashMap();
         ReadOnlyWindowStore<Object, Object> store = kafkaStreams.store(StoreQueryParameters.fromNameAndType(countStore, QueryableStoreTypes.windowStore()));
-
-        return ResponseEntity.ok(store.fetch(mainPart, Instant.now().minus(5, ChronoUnit.MINUTES), Instant.now()));
+        try(WindowStoreIterator<Object> fetch = store.fetch(mainPart, Instant.now().minus(5, ChronoUnit.MINUTES), Instant.now())){
+            while (fetch.hasNext()){
+                KeyValue<Long, Object> next = fetch.next();
+                map.put(next.key,next.value);
+            }
+        }
+        return ResponseEntity.ok(map);
     }
 }
