@@ -4,14 +4,10 @@ import ir.sadeqcloud.stream.utils.IoCContainerUtil;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.KeyQueryMetadata;
-import org.apache.kafka.streams.StoreQueryParameters;
+import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.StreamsMetadata;
-import org.apache.kafka.streams.state.QueryableStoreType;
-import org.apache.kafka.streams.state.QueryableStoreTypes;
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
-import org.apache.kafka.streams.state.ReadOnlyWindowStore;
+import org.apache.kafka.streams.kstream.Windowed;
+import org.apache.kafka.streams.state.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.config.KafkaStreamsInfrastructureCustomizer;
@@ -20,6 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.Collection;
 
 @RestController
@@ -43,6 +45,7 @@ public class MyController {
         KafkaStreams kafkaStreams = streamsBuilderFactory.getKafkaStreams();
         String countStore = IoCContainerUtil.getBean(String.class, "windowedAggregator");
         ReadOnlyWindowStore<Object, Object> store = kafkaStreams.store(StoreQueryParameters.fromNameAndType(countStore, QueryableStoreTypes.windowStore()));
-        return ResponseEntity.ok(store.fetch(mainPart,1));
+
+        return ResponseEntity.ok(store.fetch(mainPart, Instant.now().minus(5, ChronoUnit.MINUTES), Instant.now()));
     }
 }

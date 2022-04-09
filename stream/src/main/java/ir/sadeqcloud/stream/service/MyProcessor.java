@@ -122,9 +122,9 @@ public class MyProcessor {
         highDomainsStore.withValueSerde(fixedSizePriorityQueueSerde);
         /**
          * groupBy always causes data 're-partitioning'
-         * TODO 're-partitioning?'
+         * This redistribution stage, usually called 'data shuffling'
          */
-        kStream.groupBy((k,v)->v.getMainPart(),//define group key(GK) & create sub-streams
+        kStream.groupBy((k,v)->v.getMainPart(),//define group key(GK) & create sub-streams/sub-topology
                         Grouped.with(stringSerde,businessDomainSerde))
                 /**
                  * aggregates the most recent records with the same key
