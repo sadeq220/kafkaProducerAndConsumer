@@ -19,6 +19,14 @@
 ## Tasks are assigned to StreamThread(s) for execution.
 #![streamThread-overview](kafka-streams-StreamThread.png)
 
+- As records make their way through the topology,
+  each node is visited in a depth-first manner, meaning there’s never concurrent access to state stores from any given processor.
+  
+
+- All processors in a topology receive a reference to the `ProcessorContext` via the init() method,
+  which is executed by the `StreamTask` when initializing the topology.
+
+
 - By using Kafka topics to persist reshuffled streams instead of relying on interprocess communication directly,
   Kafka Streams effectively separates a single processor topology into smaller sub-topologies,
   connected by those repartition topics (each repartition topic is both a sink topic of the upstream sub-topology and a source topic of the downstream sub-topology).

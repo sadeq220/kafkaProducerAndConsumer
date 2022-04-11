@@ -8,7 +8,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
-@SpringBootTest // integration test
+/**
+ * Integration test for kafka streams
+ * kafka streams integration test relies on live broker
+ */
+
+@SpringBootTest
 @EmbeddedKafka(topics = {"test"},partitions = 1,brokerProperties = { "listeners=PLAINTEXT://localhost:9093", "port=9093" })
 @PropertySource(value = "classpath:/test.properties")
 class KafkaStreamApplicationTests {
