@@ -147,7 +147,7 @@ public class MyProcessor {
         countByMainPart.withKeySerde(stringSerde);
         countByMainPart.withValueSerde(Serdes.Long());
 
-        TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5))//no Grace means late events will be rejected
+        TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5))//no Grace means if "event time" < "stream time" , then record ignored
                 .advanceBy(Duration.ofMinutes(1));//hopping window ( advance < size )
 
         KTable<Windowed<String>, Long> count = kStream.groupBy((k, v) -> v.getMainPart(), Grouped.with(stringSerde, businessDomainSerde)).windowedBy(timeWindows).count(countByMainPart);
