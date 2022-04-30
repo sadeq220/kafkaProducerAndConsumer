@@ -1,3 +1,5 @@
+## how producer works
+![produce](producer.png)
 ## idempotent producer
 - An idempotent producer will only prevent duplicates caused by the retry mechanism of the producer itself, whether the retry is caused
   by producer, network or broker errors. But nothing else.
