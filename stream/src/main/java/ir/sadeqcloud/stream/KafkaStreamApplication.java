@@ -81,6 +81,7 @@ public class KafkaStreamApplication {
          */
         kafkaStreamConfigs.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,10_000);//define KTable cache interval flush
         kafkaStreamConfigs.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,1);//default one , use more when subscribing to 2 or more partitions ,for parallelism.
+        kafkaStreamConfigs.put(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG,"TRACE");
         return new KafkaStreamsConfiguration(kafkaStreamConfigs);
     }
 

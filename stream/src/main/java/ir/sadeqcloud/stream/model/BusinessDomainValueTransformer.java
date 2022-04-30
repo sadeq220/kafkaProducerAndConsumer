@@ -3,9 +3,12 @@ package ir.sadeqcloud.stream.model;
 
 import org.apache.kafka.streams.kstream.ValueTransformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.processor.PunctuationType;
+import org.apache.kafka.streams.processor.Punctuator;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.state.KeyValueStore;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -32,6 +35,17 @@ public class BusinessDomainValueTransformer implements ValueTransformer<Business
         this.processorContext = processorContext;
         StateStore stateStore = processorContext.getStateStore(stateStoreName);
         this.stateStore = (KeyValueStore<String, Long>) stateStore;
+        /**
+         * to schedule a periodic callback - called a punctuation
+         *
+
+        processorContext.schedule(Duration.ofMinutes(1), PunctuationType.WALL_CLOCK_TIME, new Punctuator() {
+            @Override
+            public void punctuate(long l) {
+            processorContext.forward("recordKey","recordValue");
+            }
+        });
+        */
     }
     @Override
     public DomainAccumulator transform(BusinessDomain businessDomain) {
@@ -54,4 +68,5 @@ public class BusinessDomainValueTransformer implements ValueTransformer<Business
     public void close() {
 
     }
+
 }
