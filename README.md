@@ -1,5 +1,8 @@
 ### Additional Notes
-- All the operations that modify the cluster state - create, delete and alter, are handled by the Controller. Operations that read the cluster state - list and describe,
+- Kafka utilizes `Zookeeper` for storing metadata information about the brokers, topics,
+and partitions. Writes to Zookeeper are only performed on changes to the member‐
+ship of consumer groups or on changes to the Kafka cluster itself
+- All the operations that modify the cluster state - create, delete and alter, are handled by the `Controller`. Operations that read the cluster state - list and describe,
 can be handled by any broker and are directed to the least loaded broker (based
 on what the client knows). This shouldn’t impact you as a user of the API, but it
 can be good to know - in case you are seeing unexpected behavior, you notice
