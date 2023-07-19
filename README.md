@@ -1,6 +1,20 @@
-### Additional Notes
+### Additional Notes   
+### Apache Zookeeper is a coordination service   
+zookeeper is used for **synchronization(lock management)** , configuration maintenance , and groups and naming.   
+zookeeper has a shared hierarchical namespace which is organized similarly to a standard file system. The namespace consists of data registers - called **znodes** .
+```shell
+rlwrap bash zookeeper-shell.sh localhost:2181
+```
+Unlike standard file systems, each znode in a ZooKeeper namespace can have data associated with it as well as children.      
+Znodes maintain a stat structure that includes version numbers for data changes, ACL changes, and timestamps, to allow cache validations and coordinated updates.    
+Each time a znode's data changes, the version number increases. For instance, whenever a client retrieves data it also receives the version of the data.   
+ZooKeeper supports `the concept of watches`. Clients can set a watch on a znode.   
+A watch will be triggered and removed when the znode changes.    
+When a watch is triggered, the client receives a packet saying that the znode has changed.   
+### Apache Kafka
 - Kafka utilizes `Zookeeper` for storing metadata information about the brokers, topics,
-and partitions. Writes to Zookeeper are only performed on changes to the membership of consumer groups or on changes to the Kafka cluster itself.
+and partitions and also for synchronization ( e.g. controller lock management , consumer group ownership lock management )   
+Writes to Zookeeper are only performed on changes to the membership of consumer groups or on changes to the Kafka cluster itself.   
 - All the operations that modify the cluster state - create, delete and alter, are handled by the `Controller`. Operations that read the cluster state - list and describe,
 can be handled by any broker and are directed to the least loaded broker (based
 on what the client knows). This shouldn’t impact you as a user of the API, but it
