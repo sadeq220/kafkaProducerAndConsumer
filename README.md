@@ -32,8 +32,12 @@ API on the other hand, will remain exactly the same, just with a different imple
 the offset topic. They only read offsets when a consumer is assigned a new partition
 or on startup
 - Every broker in the cluster has a
-MetadataCache that includes a map of all brokers and all replicas in the cluster
-- partition= ( 1 Leader replica ) + ( * follower replica )
+MetadataCache that includes a map of all brokers and all replicas in the cluster    
+### Kafka Replication (data redundancy)
+- partition= ( 1 Leader replica ) + ( * follower replica )   
+- replication factor = ( 1 Leader replica ) + ( * follower replica )   
+- A partition is owned by a single broker in the cluster, and that broker is called the leader of the partition.       
+- All events are produced to and consumed from the leader replica.   
 ```
  in-sync replica :
 A replica is considered in-sync if it is the leader for a partition, or if it is a follower
