@@ -26,22 +26,19 @@ public class MyKafkaProducer {
         kafkaProducer = new KafkaProducer<>(properties);
     }
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print( "message key : ");
-        String key = scanner.next();
-        System.out.print( "message value : ");
-        String value = scanner.next();
-        try(kafkaProducer){
-            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("test", key, value);
-            RecordMetadata recordMetadata = synchronousSendToKafka(kafkaProducer, producerRecord);
+        try (kafkaProducer) {
+        while(true) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("message key : ");
+            String key = scanner.next();
+            System.out.print("message value : ");
+            String value = scanner.next();
 
-            System.out.println(recordMetadata);
+                ProducerRecord<String, String> producerRecord = new ProducerRecord<>("Test_Topic_Creation", key, value);
+                RecordMetadata recordMetadata = synchronousSendToKafka(kafkaProducer, producerRecord);
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+                System.out.println(recordMetadata);
+
 
 //        Runtime.getRuntime().addShutdownHook(new Thread(){
 //            @Override
@@ -49,6 +46,12 @@ public class MyKafkaProducer {
 //                kafkaProducer.close();
 //            }
 //        });
+        }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -67,6 +70,7 @@ public class MyKafkaProducer {
     /**
      * kafka asynchronous call
      * and still handle error scenarios
+     * The callbacks execute in the producer’s main thread to achieve ordered execution of callbacks
      */
     public static class JavaCallbackMethodProvider implements Callback {
         private ProducerRecord producerRecord;
@@ -82,6 +86,8 @@ public class MyKafkaProducer {
             /**
              * It is always a good idea to use the built-in retry mechanism of the producer
              */
+            if (e != null) // log non-retryable errors
+                e.printStackTrace();
         }
     }
 }
