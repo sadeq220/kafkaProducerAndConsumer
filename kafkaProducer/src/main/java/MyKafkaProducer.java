@@ -20,7 +20,19 @@ public class MyKafkaProducer {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
         properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);//spent at most 120 sec for each message sent , this includes retries (in case of leader election it will take up to 30 sec )
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,"MyCostumeProducerInterceptor");
-        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,true);//send seq number and producer Id along message to identify duplicate messages by the broker
+        /**
+         * Idempotent producer ( part of Exactly-Once-Semantic )
+         * send sequence number and producer Id along message to identify duplicate messages by the broker.
+         * this guarantees message ordering and also guarantees that retries will not introduce duplicates.
+         * If the broker receives records with the same sequence number within a 5 message window,
+         * it will reject the second copy and the producer will receive the harmless DuplicateSequenceException.
+         *
+         * Enabling idempotence requires max.in.flight.requests.per.connection
+         * to be less than or equal to 5, retries to be greater than 0
+         * (either directly or via delivery.timeout.ms) and acks=all .
+         * incompatible values are set, a ConfigException will be thrown.
+         */
+        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,true);
         properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG,15_000);//kafka.timeout , default is 30s , wait time for a reply from the broker
 
         kafkaProducer = new KafkaProducer<>(properties);
