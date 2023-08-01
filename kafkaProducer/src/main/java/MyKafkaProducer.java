@@ -18,7 +18,15 @@ public class MyKafkaProducer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
-        properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);//spent at most 120 sec for each message sent , this includes retries (in case of leader election it will take up to 30 sec )
+        /**
+         * Message Delivery Time
+         * The upper bound time to get ack from the broker .
+         * this time comprises linger.ms , retry.backoff.ms , request.timeout.ms .
+         * effectively ( retry time + in-flight time )
+         * Use this time to manage producer retry manner .
+         * note: in case of leader election it will take up to 30 sec
+         */
+        properties.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,120_000);
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,"MyCostumeProducerInterceptor");
         /**
          * Idempotent producer ( part of Exactly-Once-Semantic )
