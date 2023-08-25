@@ -34,7 +34,7 @@ public class MyKafkaConsumer {
          *      2_2) commitAsync(callback)
          *          commit the last offset , without retry on transient errors
          *
-         * Note: always use commitSync() on shutdown logic or rebalance callbacks
+         * Note: always use commitSync() on shutdown logic or rebalance listeners
          *      2_3) commitSync(map<TopicPartition,OffsetAndMetadata>)
          *          to commit a specified offset.
          *          to commit offsets in the middle of the batch.
