@@ -5,7 +5,7 @@ import org.apache.kafka.common.TopicPartition;
 import java.util.Collection;
 
 public class HandleBalancing implements ConsumerRebalanceListener {
-    private KafkaConsumer kafkaConsumer;
+    private final KafkaConsumer kafkaConsumer;
 
     public HandleBalancing(KafkaConsumer kafkaConsumer) {
         this.kafkaConsumer = kafkaConsumer;
@@ -18,7 +18,7 @@ public class HandleBalancing implements ConsumerRebalanceListener {
      */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
-    kafkaConsumer.commitSync(MyKafkaConsumer.CONCURRENT_HASH_MAP);
+    kafkaConsumer.commitSync(MyKafkaConsumer.OFFSET_TRACKER);
         System.out.println("commit latest offset done");
     }
 
