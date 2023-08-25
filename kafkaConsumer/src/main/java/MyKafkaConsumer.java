@@ -23,7 +23,7 @@ public class MyKafkaConsumer {
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");// read AUTO_OFFSET_RESET_DOC
         properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,3);// to make sure we don't ran out of memory
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false);
-        properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,"org.apache.kafka.clients.consumer.CooperativeStickyAssignor");//Avoid “stop-the-world” consumer group rebalances by using cooperative rebalancing
+        properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,"org.apache.kafka.clients.consumer.CooperativeStickyAssignor");//Avoid “Eager Rebalances”(because they will suspend a whole topic consumption) by using “Cooperative” Rebalances(incremental rebalances)
         properties.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG,2_000);//fetch (api_key=1) max wait time ,default is 500ms , you must comply with expression ' pollDuration > fetch_max_wait ' as it cause multiple poll loop execution without even Fetch response came back
 
         kafkaConsumer=new KafkaConsumer<>(properties);
