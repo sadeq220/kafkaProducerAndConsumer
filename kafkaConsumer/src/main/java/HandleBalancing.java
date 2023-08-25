@@ -12,9 +12,8 @@ public class HandleBalancing implements ConsumerRebalanceListener {
     }
 
     /**
-     * this method will invoke on
-     * Partition rebalancing
-     * consumer client crash( cause by e.g. kill signal)
+     * Called when the consumer has to give up partitions that it previously owned -
+     * either as a result of a rebalance or when the consumer is being closed.
      */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
@@ -22,6 +21,12 @@ public class HandleBalancing implements ConsumerRebalanceListener {
         System.out.println("commit latest offset done");
     }
 
+    /**
+     * in cooperative rebalance, this method will be invoked on every rebalance.
+     * as a way of notifying the consumer that a rebalance happened.
+     * However, if there are no new partitions assigned to the consumer,
+     * it will be called with an empty collection.
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> collection) {
 
