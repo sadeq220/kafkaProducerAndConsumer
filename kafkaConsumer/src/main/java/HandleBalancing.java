@@ -29,6 +29,12 @@ public class HandleBalancing implements ConsumerRebalanceListener {
      */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> collection) {
-
+        /**
+         * If offsets are stored in persistent storage other than kafka then,
+         *
+         * kafkaConsumer.seek(topicPartition,offset);
+         *
+         * should be called here to continue from last processed event
+         */
     }
 }
