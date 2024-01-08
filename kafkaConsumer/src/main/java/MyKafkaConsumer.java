@@ -71,7 +71,7 @@ public class MyKafkaConsumer {
                     kafkaConsumer.commitAsync(OFFSET_TRACKER,null);
                 }
                 // commit the latest offset returned by poll(duration)
-                kafkaConsumer.commitSync();
+               // kafkaConsumer.commitSync();// it will raise RebalanceInProgressException
         }}catch (WakeupException e){
             // just for exit code 0
         }finally {
@@ -85,7 +85,7 @@ public class MyKafkaConsumer {
     private static <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
         MyKafkaConsumer.OFFSET_TRACKER.compute(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),(k, v)->{
             System.out.println(consumerRecord.value());
-            if (v.offset()>consumerRecord.offset()){
+            if (v != null && v.offset()>consumerRecord.offset()){
                 throw new RuntimeException("Stale offset update!");
             }
         return new OffsetAndMetadata(consumerRecord.offset()+1,null);});

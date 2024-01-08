@@ -14,11 +14,15 @@ public class HandleBalancing implements ConsumerRebalanceListener {
     /**
      * Called when the consumer has to give up partitions that it previously owned -
      * either as a result of a rebalance or when the consumer is being closed.
+     * If a cooperative rebalacing algorithm is used, this method is invoked at the end of the rebalance.
      */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
     kafkaConsumer.commitSync(MyKafkaConsumer.OFFSET_TRACKER);
         System.out.println("commit latest offset done");
+        for(TopicPartition topicPartition : collection){
+          MyKafkaConsumer.OFFSET_TRACKER.remove(topicPartition);
+        }
     }
 
     /**
