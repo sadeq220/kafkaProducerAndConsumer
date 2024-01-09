@@ -6,11 +6,14 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MyKafkaConsumer {
     private static final KafkaConsumer<String,String> kafkaConsumer;// consumer object is not thread safe
     private static Thread mainThread;
     public static final ConcurrentHashMap<TopicPartition, OffsetAndMetadata> OFFSET_TRACKER =new ConcurrentHashMap<>();
+    private static Pattern regexPattern = Pattern.compile("^.*?(\\.*)$");
     static {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
@@ -19,6 +22,7 @@ public class MyKafkaConsumer {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG,"0");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");// read AUTO_OFFSET_RESET_DOC
         properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,3);// to make sure we don't ran out of memory
+        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG,20_000);
         /**
          * Exactly-once semantic on rebalance
          * 1 ) Auto_Commit_Offset = true
@@ -84,10 +88,30 @@ public class MyKafkaConsumer {
      */
     private static <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
         MyKafkaConsumer.OFFSET_TRACKER.compute(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),(k, v)->{
-            System.out.println(consumerRecord.value());
+            System.out.println(k+"    "+consumerRecord.value());
             if (v != null && v.offset()>consumerRecord.offset()){
                 throw new RuntimeException("Stale offset update!");
             }
-        return new OffsetAndMetadata(consumerRecord.offset()+1,null);});
+            String recordValue = consumerRecord.value().toString();
+            doWithRecordValue(recordValue);
+            System.out.println("processing the record is done!");
+            return new OffsetAndMetadata(consumerRecord.offset()+1,null);});
+    }
+
+    /**
+     * Sleeps for the number of seconds indicated by the trailing dots in the input string.
+     */
+    private static void doWithRecordValue(String recordValue) {
+        Matcher matcher = regexPattern.matcher(recordValue);
+        if (matcher.find()) {
+            String group = matcher.group(1);
+            int length = group.length();
+            try {
+                if (length != 0)
+                    Thread.sleep(Duration.ofSeconds(length).toMillis());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
