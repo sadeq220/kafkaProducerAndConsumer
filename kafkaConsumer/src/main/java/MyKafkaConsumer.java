@@ -88,7 +88,7 @@ public class MyKafkaConsumer {
      */
     private static <E> void doWhitConsumerRecord(ConsumerRecord<E,E> consumerRecord,Class<E> eClass){
         MyKafkaConsumer.OFFSET_TRACKER.compute(new TopicPartition(consumerRecord.topic(),consumerRecord.partition()),(k, v)->{
-            System.out.println(k+"    "+consumerRecord.value());
+            System.out.println(k+"    key: "+consumerRecord.key()+"  value: "+consumerRecord.value()+" ,headers: "+consumerRecord.headers());
             if (v != null && v.offset()>consumerRecord.offset()){
                 throw new RuntimeException("Stale offset update!");
             }
